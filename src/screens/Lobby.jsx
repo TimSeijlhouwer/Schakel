@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
-import { fetchPlayers, startGame } from "../lib/api";
+import { fetchPlayers } from "../lib/api";
+import { startGameRpc } from "../lib/gameApi";
 import { MAX_PLAYERS } from "../lib/constants";
+import Game from "./Game";
 
 export default function Lobby({ user, game, onLeave }) {
   const [players, setPlayers] = useState([]);
   const [status, setStatus] = useState(game.status);
+  const [wordsPer, setWordsPer] = useState(8);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const isHost = game.host_id === user.id;
@@ -14,8 +17,6 @@ export default function Lobby({ user, game, onLeave }) {
     let active = true;
     const load = () => fetchPlayers(game.id).then((p) => active && setPlayers(p)).catch(() => {});
     load();
-
-    // Realtime: elke wijziging aan spelers of aan het spel opnieuw ophalen.
     const channel = supabase
       .channel(`lobby:${game.id}`)
       .on(
@@ -29,36 +30,25 @@ export default function Lobby({ user, game, onLeave }) {
         (payload) => active && setStatus(payload.new.status)
       )
       .subscribe();
-
     return () => { active = false; supabase.removeChannel(channel); };
   }, [game.id]);
+
+  // Zodra het spel begint (of geëindigd is), tonen we het spelscherm.
+  if (status === "playing" || status === "ended") {
+    return <Game user={user} game={game} onLeave={onLeave} />;
+  }
 
   const handleStart = async () => {
     setError(null);
     setBusy(true);
     try {
-      await startGame(game.id);
+      await startGameRpc(game.id, wordsPer);
+      // status komt via realtime binnen en schakelt naar het spel
     } catch (e) {
       setError(e.message || "Starten mislukt.");
-    } finally {
       setBusy(false);
     }
   };
-
-  if (status === "playing") {
-    return (
-      <main className="panel">
-        <div className="placeholder">
-          <h2>Het spel begint…</h2>
-          <p className="dim">
-            Dit is het lobby-skelet. De speelschermen (woordveld, hints, raden, punten)
-            bouwen we in de volgende stap bovenop deze lobby.
-          </p>
-          <button className="bigbtn slim" onClick={onLeave}>Terug naar start</button>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="panel">
@@ -81,9 +71,21 @@ export default function Lobby({ user, game, onLeave }) {
         </div>
       </div>
 
+      {isHost && (
+        <div className="setrow">
+          <label>Woorden per speler</label>
+          <div className="chips">
+            {[4, 6, 8].map((n) => (
+              <button key={n} className={"chip" + (wordsPer === n ? " on" : "")} onClick={() => setWordsPer(n)}>{n}</button>
+            ))}
+            <span className="hint-inline">8 is het echte spel · 4–6 om snel te testen</span>
+          </div>
+        </div>
+      )}
+
       {isHost ? (
         <button className="bigbtn" disabled={busy || players.length < 2} onClick={handleStart}>
-          {players.length < 2 ? "Wacht op minstens 2 spelers" : "Start het spel"}
+          {players.length < 2 ? "Wacht op minstens 2 spelers" : (busy ? "Bezig…" : "Start het spel")}
         </button>
       ) : (
         <p className="dim center">Wachten tot de host het spel start…</p>

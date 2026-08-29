@@ -69,3 +69,88 @@ body{margin:0}
 .placeholder{text-align:center;padding:8vh 0}
 .placeholder h2{font-family:'Bricolage Grotesque',sans-serif;font-size:26px;margin:0 0 12px}
 .placeholder .dim{max-width:400px;margin:0 auto 24px;line-height:1.6}
+
+/* ===================== SPELSCHERM ===================== */
+.gamepanel{max-width:920px}
+.ghead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:4px 0 14px}
+.gturn{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gturntxt{color:#E7DEF2;font-size:14px}
+.gmeta{display:flex;align-items:center;gap:14px;margin-left:auto}
+.myprog{color:var(--muted);font-size:13px;font-weight:600}
+.timer{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px;color:var(--teal);min-width:46px;text-align:right}
+.timer.low{color:var(--coral)}
+.pill{color:#241028;font-weight:700;padding:6px 14px;border-radius:999px;font-size:14px}
+.pill.sm{font-size:12px;padding:4px 10px}
+
+.cluebanner{display:flex;align-items:center;gap:12px;background:#ffffff0c;border:1px solid #ffffff1a;
+  border-radius:14px;padding:12px 16px;margin-bottom:14px}
+.cluebanner>span:first-child{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.cluebig{font-family:'Bricolage Grotesque',sans-serif;font-size:22px}
+.cluenum{margin-left:auto;background:var(--gold);color:#2a1a3a;font-weight:800;
+  width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-family:'Bricolage Grotesque',sans-serif;font-size:18px}
+
+.field{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:9px;margin-bottom:16px}
+.tile{position:relative;background:var(--card);color:var(--ink);border:2px solid transparent;border-radius:13px;
+  padding:15px 10px;font-size:15px;font-weight:600;overflow:hidden;transition:transform .12s,box-shadow .12s;
+  font-family:'Inter',sans-serif;min-height:54px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tileword{text-align:center;line-height:1.15}
+.tile:hover{transform:translateY(-2px);box-shadow:0 8px 18px -12px #000}
+.tile.mine{border-color:var(--gold);background:linear-gradient(#fff5da,#ffeeb8);box-shadow:0 0 0 3px #ffc94a33,0 8px 18px -10px #ffc94a}
+.tile.minedone{background:#efe6d4;color:#a89a86;border-color:#e2d3b0}
+.tile.minedone .tileword{text-decoration:line-through;text-decoration-color:#b7a789}
+.donemark{position:absolute;top:5px;right:7px;color:#c9a24a;font-weight:800;font-size:13px}
+.tile.sel{border-color:var(--coral);box-shadow:0 0 0 3px #ff5c7a44;transform:translateY(-2px)}
+.selmark{position:absolute;top:5px;right:7px;color:var(--coral);font-weight:800;font-size:13px}
+.tile.fresh{background:linear-gradient(#d6fff6,#b9f4e8);border-color:var(--teal);box-shadow:0 0 0 3px #35d6c455;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(.9)}55%{transform:scale(1.06)}100%{transform:scale(1)}}
+
+.waitcard{text-align:center;padding:9vh 0;color:#DccFEA}
+.spinner{width:34px;height:34px;border-radius:50%;border:3px solid #ffffff22;border-top-color:var(--gold);
+  margin:0 auto 16px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.cluebar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#ffffff0c;border:1px solid #ffffff1a;border-radius:16px;padding:10px}
+.clueinput{flex:1;min-width:150px;background:#ffffff12;border:1px solid #ffffff22;border-radius:11px;padding:13px 14px;color:#fff;font-size:16px;font-family:inherit}
+.clueinput:focus{outline:none;background:#ffffff1c}
+.clueinput::placeholder{color:#ffffff55}
+.numpick{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.1em}
+.numpick button{width:36px;height:36px;border-radius:10px;border:1px solid #ffffff22;background:#ffffff12;color:#fff;font-size:20px;cursor:pointer}
+.numpick b{font-size:22px;color:#fff;min-width:22px;text-align:center;font-family:'Bricolage Grotesque',sans-serif}
+
+.guessbar{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#ffffff0c;border:1px solid #ffffff1a;border-radius:16px;padding:12px 16px}
+.counter{color:#E7DEF2;font-size:15px;font-weight:600}
+
+.reveal{margin-top:4px}
+.revtop{color:#E7DEF2;font-size:15px;margin:0 0 12px}
+.scorelist{display:flex;flex-direction:column;gap:8px;margin:4px 0 16px}
+.scorerow{display:flex;align-items:center;gap:12px;background:#ffffff0a;border-radius:12px;padding:10px 14px}
+.scoretxt{color:#DccFEA;font-size:14px}
+.scorepts{margin-left:auto;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:18px;color:var(--teal)}
+
+.hostrow{display:flex;gap:10px;justify-content:flex-end;margin:8px 0 4px}
+
+.strip{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px}
+.stripitem{display:flex;align-items:center;gap:7px;background:#ffffff0c;border-radius:999px;padding:6px 12px}
+.stripscore{font-weight:700;font-size:14px;color:#fff}
+.stripname{font-size:13px;color:#E7DEF2}
+
+.gotitle{font-family:'Bricolage Grotesque',sans-serif;font-size:30px;font-weight:800;text-align:center;margin:14px 0 22px}
+.podium{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.result{display:flex;align-items:center;gap:14px;background:#ffffff0c;border:1px solid #ffffff14;border-radius:16px;padding:16px 18px}
+.result.r0{background:linear-gradient(90deg,#ffc94a22,#ffffff0a);border-color:#ffc94a55}
+.rank{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px;width:26px;color:var(--muted)}
+.result.r0 .rank{color:var(--gold)}
+.resmid{margin-left:6px;display:flex;gap:6px;flex-wrap:wrap}
+.bonustag{font-style:normal;font-size:11px;background:#ffffff18;color:#E7DEF2;padding:3px 8px;border-radius:999px}
+.restot{margin-left:auto;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:26px}
+
+.chips{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{width:46px;height:46px;border-radius:14px;border:1px solid #ffffff22;background:#ffffff0c;color:#fff;font-size:17px;font-weight:600;cursor:pointer}
+.chip.on{background:var(--gold);color:#2a1a3a;border-color:var(--gold)}
+.hint-inline{color:var(--muted);font-size:12px;margin-left:6px}
+
+@media(max-width:520px){
+  .field{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:7px}
+  .tile{font-size:14px;padding:13px 6px}
+}

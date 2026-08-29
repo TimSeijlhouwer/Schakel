@@ -56,10 +56,22 @@ supabase/
   schema.sql          tabellen + beveiliging + realtime
 ```
 
-## Volgende stap
-Bovenop deze lobby komen: het woordveld op de server delen, per speler
-geheime woorden (met strengere beveiliging), de beurten, hints, raden met
-gedeelde timer, en de puntenberekening. Daarna statistieken en leaderboards.
+## Het spel (stap 2)
+Naast de lobby zit nu het volledige spel erin: het woordveld, per speler
+geheime woorden (die de database geheimhoudt voor anderen), de beurten,
+hints, raden met een gedeelde timer, en de puntenberekening.
+
+Belangrijk: voer hiervoor éérst `supabase/schema.sql` uit (stap 1) en daarna
+`supabase/schema_game.sql` in de Supabase SQL Editor. Beide zijn veilig om
+opnieuw te draaien.
+
+De host stuurt de beurtovergangen aan: de timer telt af op ieders scherm, en
+als die op nul staat onthult de host-telefoon automatisch de ronde. De host
+kan ook zelf "Onthul nu" of "Volgende beurt" gebruiken. Valt de host weg, dan
+stokt het spel — dat kan later robuuster.
+
+## Daarna
+Statistieken en leaderboards bovenop de opgeslagen scores.
 
 ---
 
