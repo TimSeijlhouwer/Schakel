@@ -40,15 +40,20 @@ export async function joinGame(userId, name, rawCode) {
 
   if (error) throw error;
   if (!game) throw new Error("Geen spel gevonden met die code.");
-  if (game.status !== "lobby") throw new Error("Dit spel is al begonnen.");
+  if (game.status === "ended") throw new Error("Dit spel is al afgelopen.");
 
   const { data: existing } = await supabase
     .from("players")
     .select("id, user_id, color")
     .eq("game_id", game.id);
 
-  // Al eerder gejoined? Dan gewoon doorlopen.
   const mine = existing?.find((p) => p.user_id === userId);
+
+  // Al bezig? Alleen terugkomen als je er al in zat.
+  if (game.status !== "lobby" && !mine) {
+    throw new Error("Dit spel is al begonnen — je kunt alleen meedoen als je er al in zat.");
+  }
+
   if (!mine) {
     if ((existing?.length ?? 0) >= MAX_PLAYERS) {
       throw new Error("Dit spel zit vol.");

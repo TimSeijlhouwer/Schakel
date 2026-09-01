@@ -154,3 +154,10 @@ body{margin:0}
   .field{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:7px}
   .tile{font-size:14px;padding:13px 6px}
 }
+
+/* zwart woord */
+.tile.black{background:#1a1a2e;color:#fff;border-color:#ff5c7a;
+  box-shadow:0 0 0 3px #ff5c7a55,0 0 20px -4px #ff5c7a66;animation:pop .5s ease}
+.blackmark{position:absolute;top:5px;right:7px;font-size:14px}
+.scorerow.blackhit{border:1px solid #ff5c7a44;background:#ff5c7a12}
+.scorepts.neg{color:var(--coral)}

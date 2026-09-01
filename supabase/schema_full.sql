@@ -1,23 +1,54 @@
 -- =====================================================================
---  SCHAKEL — databaseschema, stap 2: het spel zelf
---  Voer dit uit in de Supabase SQL Editor NA schema.sql (stap 1).
---  Veilig om opnieuw te draaien (gebruikt if not exists / or replace).
+--  SCHAKEL — VOLLEDIG databaseschema (lobby + spel) in één bestand.
+--  Plak dit in de Supabase SQL Editor en klik Run.
+--  Veilig om opnieuw te draaien; werkt op een vers of bestaand project.
+--  (Vergeet niet: Authentication -> Sign In / Providers -> Anonymous aan.)
 -- =====================================================================
 
--- ---- extra kolommen op bestaande tabellen --------------------------
-alter table games   add column if not exists phase         text;      -- clue | guess | reveal
+-- ---------------------------------------------------------------------
+--  1. TABELLEN
+-- ---------------------------------------------------------------------
+create table if not exists games (
+  id            uuid primary key default gen_random_uuid(),
+  code          text not null unique,
+  host_id       uuid not null,
+  status        text not null default 'lobby',   -- lobby | playing | ended
+  created_at    timestamptz not null default now(),
+  phase         text,                             -- clue | guess | reveal
+  turn_number   int  not null default 0,
+  hintgever     uuid,
+  clue_word     text,
+  clue_number   int,
+  phase_ends_at timestamptz,
+  words_per     int  not null default 8
+);
+
+create table if not exists players (
+  id              uuid primary key default gen_random_uuid(),
+  game_id         uuid not null references games(id) on delete cascade,
+  user_id         uuid not null,
+  name            text not null,
+  color           text not null,
+  joined_at       timestamptz not null default now(),
+  score           int not null default 0,
+  guesses_correct int not null default 0,
+  cleared_at      timestamptz,
+  unique (game_id, user_id)
+);
+create index if not exists players_game_idx on players(game_id);
+
+-- Voor bestaande projecten: voeg ontbrekende kolommen alsnog toe.
+alter table games   add column if not exists phase         text;
 alter table games   add column if not exists turn_number   int  not null default 0;
-alter table games   add column if not exists hintgever     uuid;      -- players.id
+alter table games   add column if not exists hintgever     uuid;
 alter table games   add column if not exists clue_word     text;
 alter table games   add column if not exists clue_number   int;
 alter table games   add column if not exists phase_ends_at timestamptz;
 alter table games   add column if not exists words_per     int  not null default 8;
-
 alter table players add column if not exists score           int not null default 0;
 alter table players add column if not exists guesses_correct int not null default 0;
 alter table players add column if not exists cleared_at       timestamptz;
 
--- ---- nieuwe tabellen ------------------------------------------------
 create table if not exists word_pool (
   id   serial primary key,
   text text not null unique
@@ -54,13 +85,32 @@ create table if not exists guesses (
 );
 create index if not exists guesses_game_idx on guesses(game_id);
 
--- ---- Row Level Security --------------------------------------------
+-- ---------------------------------------------------------------------
+--  2. ROW LEVEL SECURITY
+-- ---------------------------------------------------------------------
+alter table games        enable row level security;
+alter table players      enable row level security;
 alter table word_pool    enable row level security;
 alter table words        enable row level security;
 alter table secret_words enable row level security;
 alter table guesses      enable row level security;
 
--- Het bord is zichtbaar voor deelnemers van dat spel.
+drop policy if exists "read games"        on games;
+drop policy if exists "create games"      on games;
+drop policy if exists "host updates game" on games;
+create policy "read games"        on games for select to authenticated using (true);
+create policy "create games"      on games for insert to authenticated with check (host_id = auth.uid());
+create policy "host updates game" on games for update to authenticated
+  using (host_id = auth.uid()) with check (host_id = auth.uid());
+
+drop policy if exists "read players" on players;
+drop policy if exists "join as self" on players;
+drop policy if exists "update self"  on players;
+create policy "read players" on players for select to authenticated using (true);
+create policy "join as self" on players for insert to authenticated with check (user_id = auth.uid());
+create policy "update self"  on players for update to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+
 drop policy if exists "read words" on words;
 create policy "read words" on words for select to authenticated using (
   exists (select 1 from players p where p.game_id = words.game_id and p.user_id = auth.uid())
@@ -72,27 +122,25 @@ create policy "read own secrets" on secret_words for select to authenticated usi
   exists (select 1 from players p where p.id = secret_words.player_id and p.user_id = auth.uid())
 );
 
--- Gokken zijn zichtbaar voor deelnemers (voor de onthulling).
 drop policy if exists "read guesses" on guesses;
 create policy "read guesses" on guesses for select to authenticated using (
   exists (select 1 from players p where p.game_id = guesses.game_id and p.user_id = auth.uid())
 );
--- (Schrijven naar words/secret_words/guesses gebeurt uitsluitend via de
---  functies hieronder, die als eigenaar draaien. word_pool heeft geen
---  leespolicy, dus niemand kan de woordenlijst rechtstreeks opvragen.)
+-- word_pool heeft geen leespolicy: niemand kan de woordenlijst rechtstreeks opvragen.
 
--- ---- Realtime -------------------------------------------------------
--- Zet nieuwe tabellen op de realtime-publicatie. (games/players stonden er al.)
+-- ---------------------------------------------------------------------
+--  3. REALTIME
+-- ---------------------------------------------------------------------
 do $$ begin
+  begin alter publication supabase_realtime add table games;   exception when duplicate_object then null; end;
+  begin alter publication supabase_realtime add table players; exception when duplicate_object then null; end;
   begin alter publication supabase_realtime add table words;   exception when duplicate_object then null; end;
   begin alter publication supabase_realtime add table guesses; exception when duplicate_object then null; end;
 end $$;
 
--- =====================================================================
---  FUNCTIES (server-authoritatief, draaien als eigenaar)
--- =====================================================================
-
--- Start het spel: kies bord, deel geheime woorden uit, zet eerste beurt.
+-- ---------------------------------------------------------------------
+--  4. FUNCTIES (server-authoritatief, draaien als eigenaar)
+-- ---------------------------------------------------------------------
 create or replace function start_game(p_game_id uuid, p_words_per int)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_host uuid; v_status text; v_count int; v_board int; v_player record; v_first uuid;
@@ -134,7 +182,6 @@ begin
   where id = p_game_id;
 end; $$;
 
--- Hintgever geeft linkwoord + getal → start de raadfase met een timer.
 create or replace function submit_clue(p_game_id uuid, p_word text, p_number int)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_hint uuid; v_phase text; v_me uuid;
@@ -151,7 +198,6 @@ begin
   where id = p_game_id;
 end; $$;
 
--- Rader dient zijn keuze in (mag tot de tijd om is opnieuw indienen).
 create or replace function submit_guess(p_game_id uuid, p_word_idxs int[])
 returns void language plpgsql security definer set search_path = public as $$
 declare v_phase text; v_hint uuid; v_num int; v_turn int; v_me uuid;
@@ -174,14 +220,13 @@ begin
   end if;
 end; $$;
 
--- Reken de ronde af: markeer goed/fout, deel punten uit, ga naar 'reveal'.
 create or replace function resolve_turn(p_game_id uuid)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_phase text; v_hint uuid; v_turn int; r record; v_gain int := 0;
 begin
   select phase, hintgever, turn_number into v_phase, v_hint, v_turn
   from games where id = p_game_id;
-  if v_phase <> 'guess' then return; end if;  -- idempotent
+  if v_phase <> 'guess' then return; end if;
 
   update guesses g set correct = exists (
     select 1 from secret_words s
@@ -219,7 +264,6 @@ begin
   update games set phase='reveal' where id = p_game_id;
 end; $$;
 
--- Volgende beurt (of einde). Alleen de host.
 create or replace function next_turn(p_game_id uuid)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_phase text; v_turn int; v_host uuid; v_next uuid; v_all boolean;
@@ -254,7 +298,6 @@ begin
   where id = p_game_id;
 end; $$;
 
--- Host stopt het spel handmatig.
 create or replace function end_game(p_game_id uuid)
 returns void language plpgsql security definer set search_path = public as $$
 declare v_host uuid;
@@ -271,7 +314,9 @@ grant execute on function resolve_turn(uuid)         to authenticated;
 grant execute on function next_turn(uuid)            to authenticated;
 grant execute on function end_game(uuid)             to authenticated;
 
--- ---- woordenlijst vullen -------------------------------------------
+-- ---------------------------------------------------------------------
+--  5. WOORDENLIJST
+-- ---------------------------------------------------------------------
 insert into word_pool (text) values
  ('sneeuw'),('storm'),('bal'),('weer'),('zon'),('maan'),('ster'),('zee'),('strand'),('berg'),
  ('rivier'),('bos'),('boom'),('blad'),('bloem'),('tuin'),('gras'),('steen'),('rots'),('vuur'),

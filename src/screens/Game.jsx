@@ -86,13 +86,16 @@ export default function Game({ user, game, onLeave }) {
 
   // ---- board tegel-toestand ----
   const correctThisTurn = new Set(guesses.filter((x) => x.correct).map((x) => x.word_idx));
+  const guessedThisTurn = new Set(guesses.map((x) => x.word_idx));
   const myGuessSet = new Set(guesses.filter((x) => x.rater_id === me?.id).map((x) => x.word_idx));
+  const blackIdx = g.black_word_idx;
 
   const tileState = (idx) => {
     if (g.phase === "clue" && amHint) {
       if (myFound.has(idx)) return "minedone";
       if (mySecret.has(idx)) return "mine";
     }
+    if (g.phase === "reveal" && idx === blackIdx && guessedThisTurn.has(idx)) return "black";
     if (g.phase === "reveal" && correctThisTurn.has(idx)) return "fresh";
     if (g.phase === "guess" && selection.includes(idx)) return "sel";
     return "";
@@ -186,7 +189,8 @@ export default function Game({ user, game, onLeave }) {
 
       {g.phase === "reveal" && (
         <RevealPanel players={players} guesses={guesses} hintPlayer={hintPlayer}
-          amHost={amHost} onNext={() => nextTurn(gameId).catch((e) => setError(e.message))} />
+          blackIdx={blackIdx} amHost={amHost}
+          onNext={() => nextTurn(gameId).catch((e) => setError(e.message))} />
       )}
 
       {/* host-knoppen */}
@@ -215,6 +219,7 @@ function Field({ words, tileState, onTile }) {
             <span className="tileword">{w.text}</span>
             {st === "sel" && <span className="selmark">✓</span>}
             {st === "minedone" && <span className="donemark">✓</span>}
+            {st === "black" && <span className="blackmark">💀</span>}
           </button>
         );
       })}
@@ -222,30 +227,37 @@ function Field({ words, tileState, onTile }) {
   );
 }
 
-function RevealPanel({ players, guesses, hintPlayer, amHost, onNext }) {
+function RevealPanel({ players, guesses, hintPlayer, blackIdx, amHost, onNext }) {
   const byRater = {};
   guesses.forEach((x) => {
-    byRater[x.rater_id] = byRater[x.rater_id] || { c: 0, w: 0 };
-    if (x.correct) byRater[x.rater_id].c++; else byRater[x.rater_id].w++;
+    byRater[x.rater_id] = byRater[x.rater_id] || { c: 0, w: 0, hitBlack: false };
+    if (x.correct) byRater[x.rater_id].c++;
+    else byRater[x.rater_id].w++;
+    if (x.word_idx === blackIdx) byRater[x.rater_id].hitBlack = true;
   });
   const pts = (c) => (c > 0 ? 2 * c - 1 : 0);
   const rows = Object.entries(byRater).map(([id, v]) => ({
     player: players.find((p) => p.id === id), ...v, pts: pts(v.c),
+    net: pts(v.c) - (v.hitBlack ? 3 : 0),
   }));
-  const hintGain = rows.reduce((s, r) => s + r.pts, 0);
+  const blackHits = rows.filter((r) => r.hitBlack).length;
+  const hintGain = rows.reduce((s, r) => s + pts(r.c), 0) - (blackHits * 3);
 
   return (
     <div className="reveal">
       <p className="revtop">
         <span className="pill sm" style={{ background: hintPlayer?.color }}>{hintPlayer?.name}</span>
-        &nbsp;verdiende <b style={{ color: "#35D6C4" }}>{hintGain}</b> punten deze ronde
+        &nbsp;verdiende <b style={{ color: hintGain >= 0 ? "#35D6C4" : "#FF5C7A" }}>{hintGain}</b> punten deze ronde
       </p>
       <div className="scorelist">
         {rows.map((r) => (
-          <div className="scorerow" key={r.player?.id}>
+          <div className={"scorerow" + (r.hitBlack ? " blackhit" : "")} key={r.player?.id}>
             <span className="pill sm" style={{ background: r.player?.color }}>{r.player?.name}</span>
-            <span className="scoretxt">{r.c} goed{r.w ? `, ${r.w} mis` : ""}</span>
-            <span className="scorepts">+{r.pts}</span>
+            <span className="scoretxt">
+              {r.c} goed{r.w ? `, ${r.w} mis` : ""}
+              {r.hitBlack && " · 💀 zwart woord!"}
+            </span>
+            <span className={"scorepts" + (r.net < 0 ? " neg" : "")}>{r.net >= 0 ? "+" : ""}{r.net}</span>
           </div>
         ))}
       </div>
