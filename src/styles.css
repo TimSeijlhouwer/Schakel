@@ -251,3 +251,92 @@ body{margin:0;overflow-x:hidden}
   .homecard{margin:20px 14px 40px;padding:24px 20px}
   .codebig{font-size:42px}
 }
+
+/* ===================== INFO MODAL ===================== */
+.topactions{display:flex;align-items:center;gap:8px}
+.iconbtn{width:32px;height:32px;border-radius:50%;border:1px solid #ffffff30;
+  background:#ffffff0c;color:#E7DEF2;font-size:15px;font-weight:700;cursor:pointer;
+  font-family:'Bricolage Grotesque',sans-serif;transition:.15s}
+.iconbtn:hover{background:var(--gold);color:#2a1a3a;border-color:var(--gold)}
+
+.modal-backdrop{position:fixed;inset:0;background:#0d0818cc;backdrop-filter:blur(6px);
+  z-index:100;display:flex;align-items:flex-start;justify-content:center;
+  padding:24px 16px;overflow-y:auto;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{position:relative;background:linear-gradient(170deg,#2f1f42,#251733);
+  border:1px solid #ffffff1a;border-radius:24px;padding:28px 24px;max-width:520px;width:100%;
+  animation:modalIn .3s cubic-bezier(.2,.8,.3,1)}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+.modal-close{position:absolute;top:16px;right:16px;width:30px;height:30px;border-radius:50%;
+  border:none;background:#ffffff14;color:#E7DEF2;cursor:pointer;font-size:13px}
+.modal-close:hover{background:#ffffff28}
+.modal-title{font-family:'Bricolage Grotesque',sans-serif;font-size:24px;font-weight:800;
+  margin:0 0 20px;color:var(--gold)}
+.rule{display:flex;gap:14px;margin-bottom:18px}
+.rule-icon{font-size:22px;flex:none;line-height:1.2}
+.rule h3{font-size:15px;margin:0 0 4px;color:#fff;font-weight:700}
+.rule p{margin:0;font-size:14px;line-height:1.55;color:#D4C4E8}
+.rule p em{color:var(--gold);font-style:normal;font-weight:600}
+.rule.danger h3{color:var(--coral)}
+
+/* ===================== LOBBY EXTRA ===================== */
+.copybtn{display:block;margin:14px auto 0;background:#ffffff12;border:1px solid #ffffff22;
+  color:#E7DEF2;padding:8px 18px;border-radius:999px;font-size:13px;cursor:pointer;transition:.15s}
+.copybtn:hover{background:#ffffff22}
+
+.quickrules{background:#ffffff08;border:1px solid #ffffff14;border-radius:18px;
+  padding:20px;margin-bottom:22px}
+.quickrules h3{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+.qr{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
+.qr:last-child{margin-bottom:0}
+.qr>span{flex:none;width:24px;height:24px;border-radius:50%;background:#ffffff14;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--gold)}
+.qr p{margin:2px 0 0;font-size:14px;line-height:1.5;color:#D4C4E8}
+.qr p em{color:var(--gold);font-style:normal;font-weight:600}
+.qr.danger>span{background:#ff5c7a22}
+
+/* ===================== ZWART WOORD ===================== */
+.blackwarn{background:linear-gradient(135deg,#ff5c7a1a,#ff5c7a08);
+  border:1px solid #ff5c7a44;border-radius:14px;padding:12px 16px;margin-bottom:14px;
+  font-size:14px;line-height:1.5;color:#ffd7df}
+
+.tile.myblack{background:linear-gradient(135deg,#15151f,#0a0a12);color:#ff8fa3;
+  border-color:#ff5c7a;font-weight:800;
+  box-shadow:0 0 0 3px #ff5c7a55,0 0 28px -6px #ff5c7a66}
+.tile.myblack .tileword{text-shadow:0 0 12px #ff5c7a66}
+.blackmark{position:absolute;top:5px;right:7px;font-size:13px}
+
+/* doorgestreept (al gevonden bij de huidige hintgever) */
+.tile.crossed{background:#ffffff12;color:#ffffff44;border-color:transparent;
+  cursor:default;box-shadow:none}
+.tile.crossed:hover{transform:none;box-shadow:none}
+.tile.crossed .tileword{text-decoration:line-through;text-decoration-color:#ffffff33}
+.tile.crossed .donemark{color:#ffffff44}
+
+.autosave{color:var(--muted);font-weight:400;font-size:13px}
+
+/* ===================== TUSSENSTAND ===================== */
+.stripitem{display:flex;align-items:center;gap:7px;background:#ffffff0c;
+  border-radius:999px;padding:6px 12px}
+.stripitem.isme{background:#ffc94a1a;border:1px solid #ffc94a33}
+.stripleft{font-size:11px;color:var(--muted)}
+.stripscore{font-weight:700;font-size:14px;color:#fff;margin-left:2px}
+
+/* ===================== EINDSCHERM ===================== */
+.summarycard{background:linear-gradient(170deg,#ffc94a1a,#ffffff06);
+  border:1px solid #ffc94a3a;border-radius:24px;padding:26px 22px;text-align:center;
+  margin-bottom:22px;animation:modalIn .5s ease}
+.crown{font-size:38px;animation:pulse 3s ease-in-out infinite}
+.sumwinner{font-family:'Bricolage Grotesque',sans-serif;font-size:30px;font-weight:800;
+  margin:6px 0 8px}
+.sumtext{color:#E7DEF2;font-size:15px;line-height:1.5;margin:0 0 16px}
+.sumstats{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.sumstat{background:#ffffff0e;border-radius:999px;padding:6px 14px;font-size:12.5px;color:#D4C4E8}
+
+.result{display:block;background:#ffffff0c;border:1px solid #ffffff14;border-radius:16px;
+  padding:14px 16px;animation:slideIn .4s ease}
+.resrow{display:flex;align-items:center;gap:12px}
+.resmid{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.resbase{margin-top:8px;font-size:12px;color:var(--muted)}
+.restot{margin-left:auto;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:26px}

@@ -33,7 +33,7 @@ export async function fetchSnapshot(gameId) {
     supabase.from("games").select("*").eq("id", gameId).single(),
     supabase.from("players").select("*").eq("game_id", gameId).order("joined_at"),
     supabase.from("words").select("idx,text").eq("game_id", gameId).order("idx"),
-    supabase.from("secret_words").select("word_idx,found").eq("game_id", gameId),
+    supabase.from("secret_words").select("word_idx,found,is_black").eq("game_id", gameId),
   ]);
   return {
     game: g.data,
