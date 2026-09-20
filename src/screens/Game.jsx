@@ -367,14 +367,17 @@ function StandingsStrip({ players, meId }) {
   const sorted = [...players].sort((a, b) => b.score - a.score);
   return (
     <div className="strip">
-      {sorted.map((p) => (
-        <div className={"stripitem" + (p.id === meId ? " isme" : "")} key={p.id}>
-          <span className="dot" style={{ background: p.color }} />
-          <span className="stripname">{p.name}</span>
-          <span className="stripleft">nog {p.words_left ?? "?"}</span>
-          <span className="stripscore">{p.score}</span>
-        </div>
-      ))}
+      {sorted.map((p) => {
+        const done = (p.words_left ?? 1) === 0;
+        return (
+          <div className={"stripitem" + (p.id === meId ? " isme" : "") + (done ? " done" : "")} key={p.id}>
+            <span className="dot" style={{ background: p.color }} />
+            <span className="stripname">{p.name}</span>
+            <span className="stripleft">{done ? "✓ klaar" : `nog ${p.words_left ?? "?"}`}</span>
+            <span className="stripscore">{p.score}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }

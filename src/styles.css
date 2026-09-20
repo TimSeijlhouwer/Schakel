@@ -340,3 +340,7 @@ body{margin:0;overflow-x:hidden}
 .resmid{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .resbase{margin-top:8px;font-size:12px;color:var(--muted)}
 .restot{margin-left:auto;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:26px}
+
+/* speler die al klaar is */
+.stripitem.done{background:#35d6c418;border:1px solid #35d6c433}
+.stripitem.done .stripleft{color:var(--teal);font-weight:600}

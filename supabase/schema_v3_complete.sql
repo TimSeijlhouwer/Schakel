@@ -290,6 +290,7 @@ begin
   if v_host <> auth.uid() then raise exception 'Alleen de host'; end if;
   if v_phase <> 'reveal' then return; end if;
 
+  -- iedereen klaar? dan is het spel afgelopen
   select not exists (
     select 1 from secret_words sw
     where sw.game_id = p_game_id and sw.found = false and sw.is_black = false
@@ -300,6 +301,11 @@ begin
     return;
   end if;
 
+  -- Volgende speler MET woorden over. Spelers die al klaar zijn worden
+  -- overgeslagen; ze blijven wel meeraden in andermans beurten.
+  -- De afstand loopt circulair vanaf de huidige hintgever: de eerstvolgende
+  -- krijgt 1, de huidige speler zelf komt als laatste (alleen als niemand
+  -- anders nog woorden heeft).
   with ordered as (
     select id, (row_number() over (order by joined_at)) - 1 as pos,
            count(*) over () as n
@@ -309,7 +315,19 @@ begin
     select pos, n from ordered
     where id = (select hintgever from games where id = p_game_id)
   )
-  select o.id into v_next from ordered o, cur where o.pos = (cur.pos + 1) % cur.n;
+  select o.id into v_next
+  from ordered o, cur
+  where exists (
+    select 1 from secret_words sw
+    where sw.player_id = o.id and sw.found = false and sw.is_black = false
+  )
+  order by ((o.pos - cur.pos + cur.n - 1) % cur.n) + 1
+  limit 1;
+
+  if v_next is null then
+    update games set status='ended', phase=null where id=p_game_id;
+    return;
+  end if;
 
   update games set turn_number=v_turn+1, hintgever=v_next,
     phase='clue', clue_word=null, clue_number=null, phase_ends_at=null,
